@@ -1,7 +1,8 @@
-[gd_scene load_steps=25 format=3 uid="uid://d4at5p4i47p6x"]
+[gd_scene load_steps=30 format=3 uid="uid://d4at5p4i47p6x"]
 
-[ext_resource type="Shader" uid="uid://b8c856ngvps8" path="res://shaders/outline.gdshader" id="1_p57ef"]
+[ext_resource type="Shader" path="res://shaders/postprocess_outline.gdshader" id="1_p57ef"]
 [ext_resource type="Script" uid="uid://b182ynedgupvc" path="res://scripts/camera_pivot.gd" id="1_uwrxv"]
+[ext_resource type="Shader" uid="uid://b8c856ngvps8" path="res://shaders/outline.gdshader" id="3_iywne"]
 [ext_resource type="Shader" uid="uid://bqh280ag7g8mq" path="res://shaders/cloud.gdshader" id="3_lbhrr"]
 [ext_resource type="Texture2D" uid="uid://ccdh8ynxh2coq" path="res://assets/noise.tres" id="4_iywne"]
 
@@ -43,6 +44,13 @@ roughness = 0.0
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_8cj0n"]
 
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_iywne"]
+cull_mode = 1
+shading_mode = 0
+albedo_color = Color(0, 0, 0, 1)
+grow = true
+grow_amount = 0.05
+
 [sub_resource type="SphereMesh" id="SphereMesh_uwrxv"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_yqjtg"]
@@ -67,6 +75,21 @@ shader_parameter/scale = 1.0
 shader_parameter/opacity = 1.0
 shader_parameter/direction = Vector2(1, 0)
 shader_parameter/threshold = 0.5
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_0tnpc"]
+render_priority = 0
+shader = ExtResource("3_iywne")
+shader_parameter/outline_color = Color(0, 0, 0, 1)
+shader_parameter/outline_width = 2.0
+shader_parameter/constant_width = true
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_vtaks"]
+next_pass = SubResource("ShaderMaterial_0tnpc")
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_kvpfn"]
+top_radius = 0.1
+bottom_radius = 0.1
+height = 0.5
 
 [sub_resource type="VisualShaderNodeInput" id="VisualShaderNodeInput_n5dbx"]
 input_name = "uv"
@@ -181,7 +204,9 @@ stretch_shrink = 5
 mouse_target = true
 
 [node name="SubViewport" type="SubViewport" parent="SubViewportContainer"]
+handle_input_locally = false
 size = Vector2i(384, 216)
+render_target_update_mode = 4
 
 [node name="CameraPivot" type="Node3D" parent="SubViewportContainer/SubViewport"]
 script = ExtResource("1_uwrxv")
@@ -194,6 +219,7 @@ far = 100.0
 
 [node name="PostProcessing" type="MeshInstance3D" parent="SubViewportContainer/SubViewport/CameraPivot/Camera3D"]
 transform = Transform3D(1, 0, 0, 0, 0.999994, 0.00352561, 0, -0.00352564, 0.999994, 0, 0, -3)
+visible = false
 material_override = SubResource("ShaderMaterial_u5sy4")
 mesh = SubResource("QuadMesh_gee14")
 skeleton = NodePath("../../../..")
@@ -210,7 +236,8 @@ mesh = SubResource("PlaneMesh_8cj0n")
 skeleton = NodePath("../../..")
 
 [node name="Sphere" type="MeshInstance3D" parent="SubViewportContainer/SubViewport"]
-transform = Transform3D(0.1, 0, 0, 0, 0.1, 0, 0, 0, 0.1, 0, 0.05, 0)
+transform = Transform3D(0.1, 0, 0, 0, 0.1, 0, 0, 0, 0.1, 0, 0.060376, 0)
+material_overlay = SubResource("StandardMaterial3D_iywne")
 mesh = SubResource("SphereMesh_uwrxv")
 skeleton = NodePath("../../..")
 surface_material_override/0 = SubResource("StandardMaterial3D_yqjtg")
@@ -226,6 +253,12 @@ transform = Transform3D(0.5, -0.75, 0.433013, 0, 0.5, 0.866025, -0.866025, -0.43
 shadow_enabled = true
 directional_shadow_mode = 1
 sky_mode = 1
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="SubViewportContainer/SubViewport"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.386597, 0)
+visible = false
+material_override = SubResource("StandardMaterial3D_vtaks")
+mesh = SubResource("CylinderMesh_kvpfn")
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 visible = false
