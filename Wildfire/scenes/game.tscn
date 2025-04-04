@@ -1,3 +1,295 @@
-[gd_scene format=3 uid="uid://d4at5p4i47p6x"]
+[gd_scene load_steps=25 format=3 uid="uid://d4at5p4i47p6x"]
+
+[ext_resource type="Shader" uid="uid://b8c856ngvps8" path="res://shaders/outline.gdshader" id="1_p57ef"]
+[ext_resource type="Script" uid="uid://b182ynedgupvc" path="res://scripts/camera_pivot.gd" id="1_uwrxv"]
+[ext_resource type="Shader" uid="uid://bqh280ag7g8mq" path="res://shaders/cloud.gdshader" id="3_lbhrr"]
+[ext_resource type="Texture2D" uid="uid://ccdh8ynxh2coq" path="res://assets/noise.tres" id="4_iywne"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_u5sy4"]
+render_priority = 0
+shader = ExtResource("1_p57ef")
+shader_parameter/depth_threshold = 0.05
+shader_parameter/reverse_depth_threshold = 0.25
+shader_parameter/normal_threshold = 0.6
+shader_parameter/darken_amount = 0.3
+shader_parameter/lighten_amount = 1.5
+shader_parameter/normal_edge_bias = Vector3(1, 1, 1)
+shader_parameter/light_direction = Vector3(-0.96, -0.18, 0.2)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_gee14"]
+render_priority = 0
+shader = ExtResource("1_p57ef")
+shader_parameter/depth_threshold = 0.05
+shader_parameter/reverse_depth_threshold = 0.25
+shader_parameter/normal_threshold = 0.6
+shader_parameter/darken_amount = 0.3
+shader_parameter/lighten_amount = 1.5
+shader_parameter/normal_edge_bias = Vector3(1, 1, 1)
+shader_parameter/light_direction = Vector3(-0.96, -0.18, 0.2)
+
+[sub_resource type="QuadMesh" id="QuadMesh_gee14"]
+material = SubResource("ShaderMaterial_gee14")
+flip_faces = true
+size = Vector2(2, 2)
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_uwrxv"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_lnu2h"]
+diffuse_mode = 3
+specular_mode = 1
+albedo_color = Color(0.392157, 0.392157, 0.392157, 1)
+metallic = 0.5
+roughness = 0.0
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_8cj0n"]
+
+[sub_resource type="SphereMesh" id="SphereMesh_uwrxv"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_yqjtg"]
+diffuse_mode = 3
+specular_mode = 1
+albedo_color = Color(1, 0, 0, 1)
+metallic = 0.5
+roughness = 0.0
+emission_enabled = true
+emission = Color(0.784314, 0, 0, 1)
+emission_energy_multiplier = 16.0
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_lnu2h"]
+size = Vector2(10, 10)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_yqjtg"]
+render_priority = 0
+shader = ExtResource("3_lbhrr")
+shader_parameter/noise = ExtResource("4_iywne")
+shader_parameter/speed = 0.01
+shader_parameter/scale = 1.0
+shader_parameter/opacity = 1.0
+shader_parameter/direction = Vector2(1, 0)
+shader_parameter/threshold = 0.5
+
+[sub_resource type="VisualShaderNodeInput" id="VisualShaderNodeInput_n5dbx"]
+input_name = "uv"
+
+[sub_resource type="VisualShaderNodeFloatParameter" id="VisualShaderNodeFloatParameter_pycny"]
+parameter_name = "Pixelation"
+hint = 2
+min = 256.0
+max = 512.0
+step = 4.0
+default_value_enabled = true
+default_value = 4.0
+
+[sub_resource type="VisualShaderNodeVectorOp" id="VisualShaderNodeVectorOp_oll0m"]
+default_input_values = [0, Vector2(0, 0), 1, Vector2(0, 0)]
+op_type = 0
+operator = 2
+
+[sub_resource type="VisualShaderNodeVectorFunc" id="VisualShaderNodeVectorFunc_a16yu"]
+function = 17
+
+[sub_resource type="VisualShaderNodeVectorOp" id="VisualShaderNodeVectorOp_hxn7o"]
+output_port_for_preview = 0
+default_input_values = [0, Vector2(0, 0), 1, Vector2(0, 0)]
+op_type = 0
+operator = 3
+
+[sub_resource type="VisualShaderNodeTexture" id="VisualShaderNodeTexture_carh7"]
+source = 1
+
+[sub_resource type="VisualShaderNodeInput" id="VisualShaderNodeInput_pycny"]
+input_name = "normal_texture"
+
+[sub_resource type="VisualShader" id="VisualShader_lbhrr"]
+code = "shader_type canvas_item;
+render_mode blend_mix;
+
+uniform float Pixelation : hint_range(256.0, 512.0, 4.0) = 4.0;
+uniform sampler2D screen_tex_frg_7 : hint_screen_texture;
+
+
+
+void fragment() {
+// Input:2
+	vec2 n_out2p0 = UV;
+
+
+// FloatParameter:3
+	float n_out3p0 = Pixelation;
+
+
+// VectorOp:4
+	vec2 n_out4p0 = n_out2p0 * vec2(n_out3p0);
+
+
+// VectorFunc:5
+	vec3 n_out5p0 = floor(vec3(n_out4p0, 0.0));
+
+
+// VectorOp:6
+	vec2 n_out6p0 = vec2(n_out5p0.xy) / vec2(n_out3p0);
+
+
+	vec4 n_out7p0;
+// Texture2D:7
+	n_out7p0 = texture(screen_tex_frg_7, n_out6p0);
+
+
+// Output:0
+	COLOR.rgb = vec3(n_out7p0.xyz);
+
+
+}
+"
+graph_offset = Vector2(-318.407, -16.7836)
+mode = 1
+flags/light_only = false
+nodes/fragment/0/position = Vector2(1800, 360)
+nodes/fragment/2/node = SubResource("VisualShaderNodeInput_n5dbx")
+nodes/fragment/2/position = Vector2(-920, 100)
+nodes/fragment/3/node = SubResource("VisualShaderNodeFloatParameter_pycny")
+nodes/fragment/3/position = Vector2(-840, 560)
+nodes/fragment/4/node = SubResource("VisualShaderNodeVectorOp_oll0m")
+nodes/fragment/4/position = Vector2(-200, 240)
+nodes/fragment/5/node = SubResource("VisualShaderNodeVectorFunc_a16yu")
+nodes/fragment/5/position = Vector2(280, 260)
+nodes/fragment/6/node = SubResource("VisualShaderNodeVectorOp_hxn7o")
+nodes/fragment/6/position = Vector2(760, 520)
+nodes/fragment/7/node = SubResource("VisualShaderNodeTexture_carh7")
+nodes/fragment/7/position = Vector2(1184.01, 594.725)
+nodes/fragment/8/node = SubResource("VisualShaderNodeInput_pycny")
+nodes/fragment/8/position = Vector2(-760, 1420)
+nodes/fragment/connections = PackedInt32Array(2, 0, 4, 0, 3, 0, 4, 1, 4, 0, 5, 0, 5, 0, 6, 0, 6, 0, 7, 0, 7, 0, 0, 0, 3, 0, 6, 1)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_iywne"]
+shader = SubResource("VisualShader_lbhrr")
+shader_parameter/Pixelation = 360.0
+
+[sub_resource type="CanvasTexture" id="CanvasTexture_lnu2h"]
 
 [node name="Game" type="Node3D"]
+
+[node name="SubViewportContainer" type="SubViewportContainer" parent="."]
+texture_filter = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+stretch = true
+stretch_shrink = 5
+
+[node name="SubViewport" type="SubViewport" parent="SubViewportContainer"]
+size = Vector2i(384, 216)
+
+[node name="CameraPivot" type="Node3D" parent="SubViewportContainer/SubViewport"]
+script = ExtResource("1_uwrxv")
+
+[node name="Camera3D" type="Camera3D" parent="SubViewportContainer/SubViewport/CameraPivot"]
+transform = Transform3D(1, 0, 0, 0, 0.939692, 0.34202, 0, -0.34202, 0.939692, 0, 2, 5)
+projection = 1
+current = true
+far = 100.0
+
+[node name="PostProcessing" type="MeshInstance3D" parent="SubViewportContainer/SubViewport/CameraPivot/Camera3D"]
+transform = Transform3D(1, 0, 0, 0, 0.999994, 0.00352561, 0, -0.00352564, 0.999994, 0, 0, -3)
+material_override = SubResource("ShaderMaterial_u5sy4")
+mesh = SubResource("QuadMesh_gee14")
+skeleton = NodePath("../../../..")
+
+[node name="Capsule" type="MeshInstance3D" parent="SubViewportContainer/SubViewport"]
+transform = Transform3D(0.2, 0, 0, 0, 0.2, 0, 0, 0, 0.2, 0, 0, 0)
+visible = false
+mesh = SubResource("CapsuleMesh_uwrxv")
+skeleton = NodePath("../../..")
+surface_material_override/0 = SubResource("StandardMaterial3D_lnu2h")
+
+[node name="Floor" type="MeshInstance3D" parent="SubViewportContainer/SubViewport"]
+mesh = SubResource("PlaneMesh_8cj0n")
+skeleton = NodePath("../../..")
+
+[node name="Sphere" type="MeshInstance3D" parent="SubViewportContainer/SubViewport"]
+transform = Transform3D(0.1, 0, 0, 0, 0.1, 0, 0, 0, 0.1, 0, 0.05, 0)
+mesh = SubResource("SphereMesh_uwrxv")
+skeleton = NodePath("../../..")
+surface_material_override/0 = SubResource("StandardMaterial3D_yqjtg")
+
+[node name="Clouds" type="MeshInstance3D" parent="SubViewportContainer/SubViewport"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, 0)
+cast_shadow = 3
+mesh = SubResource("PlaneMesh_lnu2h")
+surface_material_override/0 = SubResource("ShaderMaterial_yqjtg")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="SubViewportContainer/SubViewport"]
+transform = Transform3D(0.5, -0.75, 0.433013, 0, 0.5, 0.866025, -0.866025, -0.433013, 0.25, 0, 0, 0)
+shadow_enabled = true
+directional_shadow_mode = 1
+sky_mode = 1
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+visible = false
+
+[node name="MarginContainer_Lobby" type="MarginContainer" parent="CanvasLayer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="HBoxContainer" type="HBoxContainer" parent="CanvasLayer/MarginContainer_Lobby"]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+
+[node name="Button1" type="Button" parent="CanvasLayer/MarginContainer_Lobby/HBoxContainer"]
+custom_minimum_size = Vector2(100, 100)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+
+[node name="Button2" type="Button" parent="CanvasLayer/MarginContainer_Lobby/HBoxContainer"]
+custom_minimum_size = Vector2(100, 100)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+
+[node name="Button" type="Button" parent="CanvasLayer/MarginContainer_Lobby"]
+custom_minimum_size = Vector2(50, 50)
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 0
+tooltip_text = "Setting"
+
+[node name="Label" type="Label" parent="CanvasLayer/MarginContainer_Lobby"]
+layout_mode = 2
+size_flags_vertical = 0
+text = "Wildfire"
+horizontal_alignment = 1
+
+[node name="MarginContainer_Game" type="MarginContainer" parent="CanvasLayer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="Button_Compass" type="Button" parent="CanvasLayer/MarginContainer_Game"]
+custom_minimum_size = Vector2(50, 50)
+layout_mode = 2
+size_flags_horizontal = 8
+size_flags_vertical = 0
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+visible = false
+material = SubResource("ShaderMaterial_iywne")
+scale = Vector2(1920, 1080)
+texture = SubResource("CanvasTexture_lnu2h")
+centered = false
